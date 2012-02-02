@@ -1,0 +1,13 @@
+<schemalist gettext-domain="gnome-shell-extension-lunar-clock">  
+  <enum id="org.gnome.shell.extensions.lunar-clock.position">
+    <value value="0" nick="center"/>
+    <value value="1" nick="right"/>
+    <value value="2" nick="left"/>
+  </enum>    
+  <key name="position-in-panel" enum="org.gnome.shell.extensions.lunar-clock.position">
+      <default>'center'</default>
+      <summary>Position in panel</summary>
+      <description>Set the position of this GNOME Shell extension in the panel to either 'center', 'left' or 'right' (requires restart).</description>
+    </key>
+</schemalist>
+

@@ -1,5 +1,5 @@
 gnome-shell-extension-lunar-clock (0.1-1) unstable; urgency=low
 
-  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+  * Initial release
 
  -- Bastien Durel <bastien@sietchtabr.geekwu.org>  Thu, 02 Feb 2012 21:02:58 +0100
