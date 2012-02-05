@@ -1,15 +1,34 @@
 
 const St = imports.gi.St;
+const GLib = imports.gi.GLib;
 const Main = imports.ui.main;
+const PanelMenu = imports.ui.panelMenu;
+const PopupMenu = imports.ui.popupMenu;
 const Tweener = imports.ui.tweener;
 const Cairo = imports.cairo;
 const Gio = imports.gi.Gio;
 const Gtk = imports.gi.Gtk;
+const Util = imports.misc.util;
 
 const SETTINGS_SCHEMA = 'org.gnome.shell.extensions.lunar-clock';
 const POSITION_IN_PANEL_KEY = 'position-in-panel';
+const Position = {
+    CENTER: 0,
+    RIGHT: 1,
+    LEFT: 2
+}
 
 let clock;
+
+function LunarClock() {
+    this._init();
+}
+
+function getSettings(schema) {
+    if (Gio.Settings.list_schemas().indexOf(schema) == -1)
+        throw _("Schema \"%s\" not found.").format(schema);
+    return new Gio.Settings({ schema: schema });
+}
 
 LunarClock.prototype = {
 	__proto__: PanelMenu.Button.prototype,
@@ -17,35 +36,115 @@ LunarClock.prototype = {
         // Load settings
         this._settings = getSettings(SETTINGS_SCHEMA);
 		this._position_in_panel = this._settings.get_enum(POSITION_IN_PANEL_KEY);
+		this._icon_type = St.IconType.FULLCOLOR;
+
+		this._moons = new Array();
+		this._bigmoons = new Array();
+		let sysdirs = GLib.get_system_data_dirs();
+		let base = '';
+		for (let i = 0; i < sysdirs.length; i++) {
+			//global.log('seeking icons in ' + sysdirs[i] + ' ...');
+			let file = Gio.file_new_for_path(sysdirs[i] + '/icons/gnome/24x24/lunar-clock-0.png');
+			if (file.query_exists(null)) {
+				//global.log('Found !');
+				base = sysdirs[i] + '/icons/gnome';
+				break;
+			}
+		}
+		for (let i = 0; i < 56; ++i) {
+			this._moons[i] = Gio.icon_new_for_string(base + '/24x24/lunar-clock-' + i + '.png');
+			this._bigmoons[i] = Gio.icon_new_for_string(base + '/48x48/lunar-clock-' + i + '.png');
+			//global.log('icon ' + i + ': ' + this._moons[i]);
+		}
 
         // Panel icon
         this._icon = new St.Icon({
             icon_type: this._icon_type,
-            icon_name: 'view-refresh-symbolic',
+			icon_size: 24,
+            gicon: this._moons[16],
             style_class: 'system-status-icon lunar-icon' + (Main.panel.actor.get_direction() == St.TextDirection.RTL ? '-rtl' : '')
         });
-	}
+
+        // Panel menu item - the current class
+        let menuAlignment = 0.25;
+        if (St.Widget.get_default_direction() == St.TextDirection.RTL)
+            menuAlignment = 1.0 - menuAlignment;
+        PanelMenu.Button.prototype._init.call(this, menuAlignment);
+
+        this.actor.add_actor(this._icon);
+        let children = null;
+        switch (this._position_in_panel) {
+            case Position.LEFT:
+                children = Main.panel._leftBox.get_children();
+                Main.panel._leftBox.insert_actor (this.actor, children.length-1);
+                break;
+            case Position.CENTER:
+                Main.panel._centerBox.add(this.actor, { y_fill: true });
+                break;
+            case Position.RIGHT:
+                children = Main.panel._rightBox.get_children();
+                Main.panel._rightBox.insert_actor(this.actor, children.length-1);
+                break;
+			default:
+                Main.panel._centerBox.add(this.actor, { y_fill: true });
+                break;
+        }
+
+        // Moon details
+        this._moonDet = new St.Bin({ style_class: 'moon' });
+		this._bigmoonIcon = new St.Icon({
+            icon_type: this._icon_type,
+			icon_size: 24,
+            gicon: this._bigmoons[16],
+            style_class: 'lunar-icon' + (Main.panel.actor.get_direction() == St.TextDirection.RTL ? '-rtl' : '')
+        });
+		this._moonDet.set_child(this._bigmoonIcon);
+        // Astronomical details
+        this._AstroDet = new St.Bin({ style_class: 'astro' });
+
+        // Separator (copied from Gnome shell's popupMenu.js)
+        this._separatorArea = new St.DrawingArea({ style_class: 'popup-separator-menu-item' });
+        this._separatorArea.width = 200;
+        this._separatorArea.connect('repaint', Lang.bind(this, this._onSeparatorAreaRepaint));
+
+        // Putting the popup item together
+        let mainBox = new St.BoxLayout({ vertical: true });
+        mainBox.add_actor(this._moonDet);
+        mainBox.add_actor(this._separatorArea);
+        mainBox.add_actor(this._AstroDet);
+        this.menu.addActor(mainBox);
+	},
+
+    // Copied from Gnome shell's popupMenu.js
+    _onSeparatorAreaRepaint: function(area) {
+        let cr = area.get_context();
+        let themeNode = area.get_theme_node();
+        let [width, height] = area.get_surface_size();
+        let margin = themeNode.get_length('-margin-horizontal');
+        let gradientHeight = themeNode.get_length('-gradient-height');
+        let startColor = themeNode.get_color('-gradient-start');
+        let endColor = themeNode.get_color('-gradient-end');
+
+        let gradientWidth = (width - margin * 2);
+        let gradientOffset = (height - gradientHeight) / 2;
+        let pattern = new Cairo.LinearGradient(margin, gradientOffset, width - margin, gradientOffset + gradientHeight);
+        pattern.addColorStopRGBA(0, startColor.red / 255, startColor.green / 255, startColor.blue / 255, startColor.alpha / 255);
+        pattern.addColorStopRGBA(0.5, endColor.red / 255, endColor.green / 255, endColor.blue / 255, endColor.alpha / 255);
+        pattern.addColorStopRGBA(1, startColor.red / 255, startColor.green / 255, startColor.blue / 255, startColor.alpha / 255);
+        cr.setSource(pattern);
+        cr.rectangle(margin, gradientOffset, gradientWidth, gradientHeight);
+        cr.fill();
+    }
 };
 
 function init() {
-    button = new St.Bin({ style_class: 'panel-button',
-                          reactive: true,
-                          can_focus: true,
-                          x_fill: true,
-                          y_fill: false,
-                          track_hover: true });
-    let icon = new St.Icon({ icon_name: 'system-run',
-                             icon_type: St.IconType.SYMBOLIC,
-                             style_class: 'system-status-icon' });
-
-    button.set_child(icon);
-    button.connect('button-press-event', _showHello);
 }
 
 function enable() {
-    Main.panel._rightBox.insert_actor(button, 0);
+	clock = new LunarClock();
+    Main.panel.addToStatusArea('lunar-clock', clock);
 }
 
 function disable() {
-    Main.panel._rightBox.remove_actor(button);
+    clock.destroy();
 }

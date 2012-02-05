@@ -2,7 +2,7 @@ Source: gnome-shell-extension-lunar-clock
 Section: unknown
 Priority: extra
 Maintainer: Bastien Durel <bastien@sietchtabr.geekwu.org>
-Build-Depends: debhelper (>= 8.0.0)
+Build-Depends: debhelper (>= 8.0.0), imagemagick
 Standards-Version: 3.9.2
 Vcs-Git: git://git@github.com:BastienDurel/gnome-shell-extension-lunar-clock.git
 Vcs-Browser: https://github.com/BastienDurel/gnome-shell-extension-lunar-clock
@@ -10,5 +10,6 @@ Vcs-Browser: https://github.com/BastienDurel/gnome-shell-extension-lunar-clock
 Package: gnome-shell-extension-lunar-clock
 Architecture: all
 Depends: gnome-shell (>= 3.2)
+Conflicts: glunarclock
 Description: Show moon phases in the menu bar
  Show moon phases in the menu bar of gnome-shell
