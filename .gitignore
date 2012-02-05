@@ -4,3 +4,5 @@ debian/gnome-shell-extension-lunar-clock.debhelper.log
 debian/gnome-shell-extension-lunar-clock.substvars
 debian/gnome-shell-extension-lunar-clock/
 legacy/glunarclock-0.34.1
+pixmaps/
+*~
