@@ -1,0 +1,10 @@
+Lunar-Clock extension for GNOME SHELL (c) 2012 Bastien Durel
+
+displays the current phase of the Moon in the gnome-shell top bar. 
+
+Based on a GNOME 2 appel 'glunarclock', see "legacy" directory for more details
+
+This software is released under the GNU Public License.  See the
+'COPYING' file for details on copying and redistributing this program.
+
+GNOME Lunar Clock Applet (C) 2000-2005 josh buhl

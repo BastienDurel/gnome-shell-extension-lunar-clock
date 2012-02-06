@@ -9,6 +9,7 @@ const Cairo = imports.cairo;
 const Gio = imports.gi.Gio;
 const Gtk = imports.gi.Gtk;
 const Util = imports.misc.util;
+const Lang = imports.lang;
 
 const SETTINGS_SCHEMA = 'org.gnome.shell.extensions.lunar-clock';
 const POSITION_IN_PANEL_KEY = 'position-in-panel';
@@ -17,6 +18,7 @@ const Position = {
     RIGHT: 1,
     LEFT: 2
 }
+const PIXMAPS = '/pixmaps/lunar-clock';
 
 let clock;
 
@@ -43,25 +45,25 @@ LunarClock.prototype = {
 		let sysdirs = GLib.get_system_data_dirs();
 		let base = '';
 		for (let i = 0; i < sysdirs.length; i++) {
-			//global.log('seeking icons in ' + sysdirs[i] + ' ...');
-			let file = Gio.file_new_for_path(sysdirs[i] + '/icons/gnome/24x24/lunar-clock-0.png');
+			global.log('seeking icons in ' + sysdirs[i] + PIXMAPS + ' ...');
+			let file = Gio.file_new_for_path(sysdirs[i] + PIXMAPS + '/24x24/lunar-clock-0.png');
 			if (file.query_exists(null)) {
-				//global.log('Found !');
-				base = sysdirs[i] + '/icons/gnome';
+				global.log('Found !');
+				base = sysdirs[i] + PIXMAPS;
 				break;
 			}
 		}
 		for (let i = 0; i < 56; ++i) {
 			this._moons[i] = Gio.icon_new_for_string(base + '/24x24/lunar-clock-' + i + '.png');
 			this._bigmoons[i] = Gio.icon_new_for_string(base + '/48x48/lunar-clock-' + i + '.png');
-			//global.log('icon ' + i + ': ' + this._moons[i]);
+			global.log('icon ' + i + ': ' + this._moons[i]);
 		}
 
         // Panel icon
         this._icon = new St.Icon({
             icon_type: this._icon_type,
 			icon_size: 24,
-            gicon: this._moons[16],
+            gicon: this._moons[20],
             style_class: 'system-status-icon lunar-icon' + (Main.panel.actor.get_direction() == St.TextDirection.RTL ? '-rtl' : '')
         });
 
@@ -94,11 +96,15 @@ LunarClock.prototype = {
         this._moonDet = new St.Bin({ style_class: 'moon' });
 		this._bigmoonIcon = new St.Icon({
             icon_type: this._icon_type,
-			icon_size: 24,
-            gicon: this._bigmoons[16],
+			icon_size: 48,
+            gicon: this._bigmoons[20],
             style_class: 'lunar-icon' + (Main.panel.actor.get_direction() == St.TextDirection.RTL ? '-rtl' : '')
         });
-		this._moonDet.set_child(this._bigmoonIcon);
+		this._moonDetLabel = new St.Label({ text: _('Details ... lorem ipsum et caetera') });
+		let box = new St.BoxLayout({ style_class: 'lunar-clock-details' });
+		box.add_actor(this._bigmoonIcon);
+		box.add_actor(this._moonDetLabel);
+		this._moonDet.set_child(box);
         // Astronomical details
         this._AstroDet = new St.Bin({ style_class: 'astro' });
 

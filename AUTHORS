@@ -1,0 +1,80 @@
+Lunar-Clock written by:
+	Bastien Durel <bastien@durel.org>
+
+	gnome-shell applet based on glunarclock code and pixmaps
+
+glunarclock written by:
+	Josh Buhl <jbuhl at users dot sourceforge dot net>
+	Christine Spang <spang@mit.edu>
+
+Based on:
+	wmMoonClock-1.27, (CalcEphem.c, Moon.c, MoonRise.c) 
+	(C) Mike Henderson
+
+	'Wanda-the-Fish' applet code originally by George Lebl <jirka
+ 	at 5z dot com> and Mark McLoughlin <mark at skynet dot ie>
+ 	(used in glunarclock.c) (C) 1998-2002 The Free Software
+ 	Foundation.
+
+Using:
+
+	GNOME Development Framework (configure.in, makefiles.am,
+	macros, etc.)  regularly copied from the gnome-applets
+	project, which is based upon the GNU autoconf, automake, make,
+	and gettext utilities.
+
+
+Release Technician & Project Management:
+
+	Jon Ciesla http://www.jcomserv.net/
+
+
+The cartoon version of the moon image file was drawn by Nisse
+<nisses.mail at home dot se>, homepage: http://ramnet.se/~nisse/.
+
+
+The following packagers kindly produce the packages you probably have installed:
+
+Fabian Greffrath (official debs) http://www.debian.org
+Jon Ciesla (Fedora)
+Dag Wieers (inofficial rpms) http://dag.wieers.com
+
+
+The following translators have kindly contributed po files:
+
+Ricardo Mones Lastra (ast_ES)
+Marquinos (ast)
+Vasif İsmayıloğlu (az)
+Vavor Dogonov (bg)
+J. Victor Martins (br)
+Keld Simonsen, Christian Rose, Joe Hansen (da)
+Josh Buhl,  Roland Illig (de)
+Ricardo Mones Lastra, Victor Valdes Marquez (es, ast_es)
+Lauri Nurmi (fi)
+Roy Mathieu (fr)
+Kevin Patrick Scannell (ga)
+Jesús Bravo Álvarez (gl)
+Emese Kovacs, Horváth Árpád (hu)
+Andhika Padmawan (id)
+Yoshito Komatsu (ja)
+Rihards Prieditis (lv)
+Hasbullah Bin Pit (ms)
+Elros Cyriatan, Taco Witte, Erwin Poeze (nl)
+Kjartan Maraas (no)
+Joao Victor Duarte Martins (pt_BR)
+Laurentiu Buzdugan (ro)
+Yuriy Movchan (ru)
+Steven Murphy (rw)
+Andrej Kacian.sk (sk)
+Aleksandar Jelenak (sr)
+Christian Rose, Daniel Nylander (sv)
+pclouds, Clytie Siddall (vi)
+Pablo Saratxaga (vi, wa)
+Clytie Siddall (vi)
+Ji ZhengYu (zh_CN)
+Wei-Lun Chao (zh_TW)
+
+The following developers have kindly contributed patches:
+
+Toshio Kuratomi -- update glunarclock source tree to newest gnome 2.6 document structure
+
