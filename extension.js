@@ -4,6 +4,7 @@ const GLib = imports.gi.GLib;
 const Main = imports.ui.main;
 const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
+const Mainloop = imports.mainloop;
 const Tweener = imports.ui.tweener;
 const Cairo = imports.cairo;
 const Gio = imports.gi.Gio;
@@ -39,16 +40,17 @@ LunarClock.prototype = {
         this._settings = getSettings(SETTINGS_SCHEMA);
 		this._position_in_panel = this._settings.get_enum(POSITION_IN_PANEL_KEY);
 		this._icon_type = St.IconType.FULLCOLOR;
+        this._refresh_interval = 3600;
 
 		this._moons = new Array();
 		this._bigmoons = new Array();
 		let sysdirs = GLib.get_system_data_dirs();
 		let base = '';
 		for (let i = 0; i < sysdirs.length; i++) {
-			global.log('seeking icons in ' + sysdirs[i] + PIXMAPS + ' ...');
+			//global.log('seeking icons in ' + sysdirs[i] + PIXMAPS + ' ...');
 			let file = Gio.file_new_for_path(sysdirs[i] + PIXMAPS + '/24x24/lunar-clock-0.png');
 			if (file.query_exists(null)) {
-				global.log('Found !');
+				//global.log('Found !');
 				base = sysdirs[i] + PIXMAPS;
 				break;
 			}
@@ -56,7 +58,7 @@ LunarClock.prototype = {
 		for (let i = 0; i < 56; ++i) {
 			this._moons[i] = Gio.icon_new_for_string(base + '/24x24/lunar-clock-' + i + '.png');
 			this._bigmoons[i] = Gio.icon_new_for_string(base + '/48x48/lunar-clock-' + i + '.png');
-			global.log('icon ' + i + ': ' + this._moons[i]);
+			//global.log('icon ' + i + ': ' + this._moons[i]);
 		}
 
         // Panel icon
@@ -140,6 +142,52 @@ LunarClock.prototype = {
         cr.setSource(pattern);
         cr.rectangle(margin, gradientOffset, gradientWidth, gradientHeight);
         cr.fill();
+    },
+
+    refreshMoon: function() {
+        //global.log('refreshMoon()');
+        let moonId = 42;
+        // TODO: get the proper value. see spawnCommandLine ...
+        this._icon.gicon = this._moons[moonId];
+        this._bigmoonIcon.gicon = this._bigmoons[moonId];
+        Mainloop.timeout_add_seconds(this._refresh_interval, Lang.bind(this, function() {
+            if (Main.panel._moon) this.refreshMoon();
+        }));
+    },
+
+    spawnCommandLine: function(command_line) {
+        try {
+            let [success, argv] = GLib.shell_parse_argv(command_line);
+            return this.trySpawn(argv);
+        } catch (err) {
+            let title = _("Execution of '%s' failed:").format(command_line);
+            Main.notifyError(title, err.message);
+            global.log(title + err.message);
+            return null;
+        }
+    },
+
+    trySpawn: function(argv)
+    {
+        try {
+            let [success, stdout, stderr] = GLib.spawn_sync(null, argv, null,
+                                     GLib.SpawnFlags.SEARCH_PATH, null, null);
+            //global.log('stdout: ' + stdout);
+            return stdout;
+        } catch (err) {
+            if (err.code == GLib.SpawnError.G_SPAWN_ERROR_NOENT) {
+                err.message = _("Command not found");
+            } else {
+                // The exception from gjs contains an error string like:
+                //   Error invoking GLib.spawn_command_line_async: Failed to
+                //   execute child process "foo" (No such file or directory)
+                // We are only interested in the part in the parentheses. (And
+                // we can't pattern match the text, since it gets localized.)
+                err.message = err.message.replace(/.*\((.+)\)/, '$1');
+            }
+
+            throw err;
+        }
     }
 };
 
@@ -149,8 +197,11 @@ function init() {
 function enable() {
 	clock = new LunarClock();
     Main.panel.addToStatusArea('lunar-clock', clock);
+    Main.panel._moon = clock;
+    clock.refreshMoon();
 }
 
 function disable() {
     clock.destroy();
+    Main.panel._moon = null;
 }

@@ -26,7 +26,7 @@ po: $(FRGMO)
 
 deb: $(DEB)
 $(DEB): $(EXT)
-	dpkg-buildpackage -b
+	dpkg-buildpackage -b -uc
 deb-install: $(DEB)
 	sudo dpkg -i $(DEB)
 
@@ -37,7 +37,8 @@ root-install:
 
 $(LEGACY):
 	tar zxv -C legacy -f legacy/glunarclock_0.34.1.orig.tar.gz
-$(LEGACY)/configure: $(LEGACY)
+$(LEGACY)/configure:
+	test -d $(LEGACY) || make $(LEGACY)
 	(cd $(LEGACY) ; autoconf)
 $(LEGACY)/Makefile: $(LEGACY)/configure
 	(cd $(LEGACY) ; GNOME_APPLETS_CFLAGS=-I. GNOME_APPLETS_LIBS=-L. ./configure --prefix=/)
@@ -82,6 +83,6 @@ $(DIR):
 	mkdir -p $@
 
 clean:
-	rm -Rf $(LEGACY) pixmaps
 	-make -C $(LEGACY) distclean
+	rm -Rf $(LEGACY) pixmaps
 
