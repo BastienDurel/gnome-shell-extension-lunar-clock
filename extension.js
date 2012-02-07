@@ -40,7 +40,9 @@ LunarClock.prototype = {
         this._settings = getSettings(SETTINGS_SCHEMA);
 		this._position_in_panel = this._settings.get_enum(POSITION_IN_PANEL_KEY);
 		this._icon_type = St.IconType.FULLCOLOR;
-        this._refresh_interval = 3600;
+    this._refresh_interval = 5;
+
+		this._moonId = 20;
 
 		this._moons = new Array();
 		this._bigmoons = new Array();
@@ -146,7 +148,9 @@ LunarClock.prototype = {
 
     refreshMoon: function() {
         //global.log('refreshMoon()');
-        let moonId = 42;
+				this._moonId++;
+				if (this._moonId >= this._bigmoons.length) this._moonId = 0;
+        let moonId = this._moonId;
         // TODO: get the proper value. see spawnCommandLine ...
         this._icon.gicon = this._moons[moonId];
         this._bigmoonIcon.gicon = this._bigmoons[moonId];
