@@ -3,6 +3,8 @@
 #include "moondata.h"
 
 #include <time.h>
+#include <unistd.h>
+#include <stdlib.h>
 #include <X11/X.h>		/* need this for CurrentTime */
 
 #include "MoonRise.h"
@@ -188,18 +190,42 @@ update_image_number (MoonApplet * moon)
 	return;
 }
 
-int main()
+int main(int argc, char * const argv[])
 {
 	MoonHelper moon = {};
-	moon.latitude = 50.7;
-	moon.longitude = 7.1;
+	int opt;
+
+	/* defaults: 56 frames, Le Kremlin Bicêtre */
+	moon.latitude = 48.814028;
+	moon.longitude = 2.36075;
 	moon.is_north = 1;
 	moon.is_east = 1;
 	moon.n_frames = 56;
+
+	while ((opt = getopt(argc, argv, "f:o:a:")) != -1) {
+	   switch (opt) {
+	   case 'f':
+			moon.n_frames = atoi(optarg);
+			break;
+	   case 'o':
+			moon.longitude = atof(optarg);
+			if (moon.longitude < 0) { moon.longitude *= -1; moon.is_east = 0; }
+			break;
+	   case 'a':
+			moon.latitude = atof(optarg);
+			if (moon.latitude < 0) { moon.latitude *= -1; moon.is_north = 0; }
+			break;
+	   default: /* '?' */
+		   exit(EXIT_FAILURE);
+	   }
+	}
 	update_moondata(&moon);
 	update_image_number(&moon);
-	printf("{\"image_number\": %d, \"rotation_type\": %d, \"flip\": %d}\n", 
-			moon.image_number, moon.rotation_type, moon.flip);
+	printf("{\"image_number\": %d, \"rotation_type\": %d, \"flip\": %d, \"full_moon\": %g, "
+			"\"new_moon\": %g, \"altitude\": %g, \"azimuth\": %g, \"phase\": %.4g"
+			"}\n", 
+			moon.image_number, moon.rotation_type, moon.flip,
+			moondata.FullMoon, moondata.NewMoon, moondata.h_moon, moondata.A_moon, moondata.MoonPhase * 100);
 	return 0;
 }
 

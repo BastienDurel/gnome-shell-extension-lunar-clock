@@ -11,6 +11,7 @@ const Gio = imports.gi.Gio;
 const Gtk = imports.gi.Gtk;
 const Util = imports.misc.util;
 const Lang = imports.lang;
+const Json = imports.gi.Json;
 
 const SETTINGS_SCHEMA = 'org.gnome.shell.extensions.lunar-clock';
 const POSITION_IN_PANEL_KEY = 'position-in-panel';
@@ -40,9 +41,9 @@ LunarClock.prototype = {
         this._settings = getSettings(SETTINGS_SCHEMA);
 		this._position_in_panel = this._settings.get_enum(POSITION_IN_PANEL_KEY);
 		this._icon_type = St.IconType.FULLCOLOR;
-    this._refresh_interval = 5;
+    this._refresh_interval = 3600;
 
-		this._moonId = 20;
+		this._moonId = 0;
 
 		this._moons = new Array();
 		this._bigmoons = new Array();
@@ -148,10 +149,16 @@ LunarClock.prototype = {
 
     refreshMoon: function() {
         //global.log('refreshMoon()');
-				this._moonId++;
-				if (this._moonId >= this._bigmoons.length) this._moonId = 0;
-        let moonId = this._moonId;
-        // TODO: get the proper value. see spawnCommandLine ...
+		let cmd = "lunar-clock-helper";
+		let helperJSON = this.spawnCommandLine(cmd);
+        //global.log('helperJSON: ' + helperJSON);
+		let jp = new Json.Parser();
+		jp.load_from_data("" + helperJSON + "", -1);
+		this.moondata = jp.get_root().get_object();
+		//global.log("moondata: " + this.moondata);
+        let moonId = this.moondata.get_int_member('image_number');
+		let fullMoon = this.moondata.get_double_member('full_moon');
+		//global.log('moonId: ' + moonId + " - fullMoon: " + fullMoon);
         this._icon.gicon = this._moons[moonId];
         this._bigmoonIcon.gicon = this._bigmoons[moonId];
         Mainloop.timeout_add_seconds(this._refresh_interval, Lang.bind(this, function() {

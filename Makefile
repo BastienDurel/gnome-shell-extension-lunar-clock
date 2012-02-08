@@ -38,7 +38,7 @@ $(DEB): $(EXT)
 deb-install: $(DEB)
 	sudo dpkg -i $(DEB)
 
-root-install:
+root-install: $(EXT)
 	sudo install $(FILES) $(DIR)
 	sudo install $(SCHEMA) $(SDIR)
 	sudo install $(HELPER) $(BDIR)
