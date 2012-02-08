@@ -5,13 +5,13 @@ HELPER=lunar-clock-helper
 
 IMG=pixmaps/48/lunar-clock-0.png pixmaps/24/lunar-clock-55.png
 
-HELPERC=helper.c
-HELPEROBJ=$(HELPERC:.c=.o)
-CFLAGS=$(shell pkg-config --cflags glib-2.0)
-LDFLAGS=$(shell pkg-config --libs glib-2.0)
-
 LEGACY=legacy/glunarclock-0.34.1
 FRGMO=$(LEGACY)/po/fr.gmo
+
+HELPERC=helper.c $(LEGACY)/src/CalcEphem.c $(LEGACY)/src/Moon.c $(LEGACY)/src/MoonRise.c
+HELPEROBJ=$(HELPERC:.c=.o)
+CFLAGS=$(shell pkg-config --cflags glib-2.0) -I$(LEGACY)/src
+LDFLAGS=$(shell pkg-config --libs glib-2.0) -lm
 
 DEB=../gnome-shell-extension-lunar-clock_0.1-1_all.deb
 
