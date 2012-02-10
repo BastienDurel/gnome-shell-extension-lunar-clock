@@ -7,11 +7,13 @@
 #include <stdlib.h>
 #include <X11/X.h>		/* need this for CurrentTime */
 
+#include <libintl.h>
+
 #include "MoonRise.h"
 #include "moondata.h"
 #include "CalcEphem.h"
 
-#define _
+#define _ gettext
 
 #define RADIUS_OF_EARTH 6371	/* kilometers */
 
@@ -194,6 +196,10 @@ int main(int argc, char * const argv[])
 {
 	MoonHelper moon = {};
 	int opt;
+	gchar rise[512] = "";
+	gchar set[512] = "";
+
+	textdomain("glunarclock");
 
 	/* defaults: 56 frames, Le Kremlin Bicêtre */
 	moon.latitude = 48.814028;
@@ -221,11 +227,13 @@ int main(int argc, char * const argv[])
 	}
 	update_moondata(&moon);
 	update_image_number(&moon);
-	printf("{\"image_number\": %d, \"rotation_type\": %d, \"flip\": %d, \"full_moon\": %g, "
-			"\"new_moon\": %g, \"altitude\": %g, \"azimuth\": %g, \"phase\": %.4g"
-			"}\n", 
-			moon.image_number, moon.rotation_type, moon.flip,
-			moondata.FullMoon, moondata.NewMoon, moondata.h_moon, moondata.A_moon, moondata.MoonPhase * 100);
+	calc_riseset_time(rise, set, 510, &moondata);
+	printf("{\"image_number\": %d, \"full_moon\": %g, \"new_moon\": %g, "
+			"\"altitude\": %g, \"azimuth\": %g, \"phase\": %.4g, "
+			"\"rise\": \"%s\", \"set\": \"%s\"}\n", 
+			moon.image_number, moondata.FullMoon, moondata.NewMoon, 
+			moondata.h_moon, moondata.A_moon, moondata.MoonPhase * 100,
+			rise, set);
 	return 0;
 }
 

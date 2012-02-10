@@ -12,6 +12,8 @@ const Gtk = imports.gi.Gtk;
 const Util = imports.misc.util;
 const Lang = imports.lang;
 const Json = imports.gi.Json;
+const Gettext = imports.gettext.domain('glunarclock');
+const _ = Gettext.gettext;
 
 const SETTINGS_SCHEMA = 'org.gnome.shell.extensions.lunar-clock';
 const POSITION_IN_PANEL_KEY = 'position-in-panel';
@@ -147,7 +149,7 @@ LunarClock.prototype = {
         cr.fill();
     },
 
-    refreshMoon: function() {
+    refreshMoon: function(loop) {
         //global.log('refreshMoon()');
 		let cmd = "lunar-clock-helper";
 		let helperJSON = this.spawnCommandLine(cmd);
@@ -161,8 +163,45 @@ LunarClock.prototype = {
 		//global.log('moonId: ' + moonId + " - fullMoon: " + fullMoon);
         this._icon.gicon = this._moons[moonId];
         this._bigmoonIcon.gicon = this._bigmoons[moonId];
-        Mainloop.timeout_add_seconds(this._refresh_interval, Lang.bind(this, function() {
-            if (Main.panel._moon) this.refreshMoon();
+		/* build details */
+		let alt = this.moondata.get_double_member('altitude');
+		var det = "";
+		if (alt < 0) {
+			det += _("The moon is currently below the horizon.");
+		}
+		else {
+			det += _("The moon is currently above the horizon.");
+		}
+		det += "\n" + _("Moonrise & Moonset (Universal Time)") + ": ";
+		det += this.moondata.get_string_member('rise') + ' & ' + 
+			this.moondata.get_string_member('set');
+		this._moonDetLabel.text = det;
+		/* build astronomical details */
+        let box = new St.Table({ homogeneous: false });
+		let fr = new St.Label({ text: _("Fraction of Cycle") });
+		let frv = new St.Label({ text: this.moondata.get_double_member('phase') + "%" });
+		let alt = new St.Label({ text: _("Altitude") });
+		let altv = new St.Label({ text:this.moondata.get_double_member('altitude') + " °" });
+		let azm = new St.Label({ text: _("Azimuth") });
+		let azmv = new St.Label({ text: this.moondata.get_double_member('azimuth') + " °" });
+		let nm = new St.Label({ text: _("Days to New Moon") });
+		let nmv = new St.Label({ text: this.moondata.get_double_member('new_moon') + "" });
+		let fm = new St.Label({ text: _("Days to Full Moon") });
+		let fmv = new St.Label({ text: this.moondata.get_double_member('full_moon') + "" });
+		box.add(fr, {row: 0, col: 0, x_fill:false, y_fill:false});
+		box.add(frv, {row: 0, col: 1, x_fill:false, y_fill:false});
+		box.add(alt, {row: 1, col: 0, x_fill:false, y_fill:false});
+		box.add(altv, {row: 1, col: 1, x_fill:false, y_fill:false});
+		box.add(azm, {row: 2, col: 0, x_fill:false, y_fill:false});
+		box.add(azmv, {row: 2, col: 1, x_fill:false, y_fill:false});
+		box.add(nm, {row: 3, col: 0, x_fill:false, y_fill:false});
+		box.add(nmv, {row: 3, col: 1, x_fill:false, y_fill:false});
+		box.add(fm, {row: 4, col: 0, x_fill:false, y_fill:false});
+		box.add(fmv, {row: 4, col: 1, x_fill:false, y_fill:false});
+		this._AstroDet.set_child(box);
+		/* register next refresh */
+        if (loop) Mainloop.timeout_add_seconds(this._refresh_interval, Lang.bind(this, function() {
+            if (Main.panel._moon) this.refreshMoon(true);
         }));
     },
 
@@ -209,7 +248,7 @@ function enable() {
 	clock = new LunarClock();
     Main.panel.addToStatusArea('lunar-clock', clock);
     Main.panel._moon = clock;
-    clock.refreshMoon();
+    clock.refreshMoon(true);
 }
 
 function disable() {
