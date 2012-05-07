@@ -1,3 +1,9 @@
+gnome-shell-extension-lunar-clock (0.2-1) unstable; urgency=low
+
+  * Update for gnome 3.4
+
+ -- Bastien Durel <bastien@sietchtabr.geekwu.org>  Mon, 07 May 2012 09:35:12 +0200
+
 gnome-shell-extension-lunar-clock (0.1-1) unstable; urgency=low
 
   * Initial release
