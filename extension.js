@@ -69,15 +69,13 @@ LunarClock.prototype = {
         // Panel icon
         this._icon = new St.Icon({
             icon_type: this._icon_type,
-			icon_size: 24,
+						icon_size: 24,
             gicon: this._moons[20],
-            style_class: 'system-status-icon lunar-icon' + (Main.panel.actor.get_direction() == St.TextDirection.RTL ? '-rtl' : '')
+            style_class: 'system-status-icon lunar-icon'
         });
 
         // Panel menu item - the current class
         let menuAlignment = 0.25;
-        if (St.Widget.get_default_direction() == St.TextDirection.RTL)
-            menuAlignment = 1.0 - menuAlignment;
         PanelMenu.Button.prototype._init.call(this, menuAlignment);
 
         this.actor.add_actor(this._icon);
@@ -105,7 +103,7 @@ LunarClock.prototype = {
             icon_type: this._icon_type,
 			icon_size: 48,
             gicon: this._bigmoons[20],
-            style_class: 'lunar-icon' + (Main.panel.actor.get_direction() == St.TextDirection.RTL ? '-rtl' : '')
+            style_class: 'lunar-icon'
         });
 		this._moonDetLabel = new St.Label({ text: _('Details ... lorem ipsum et caetera') });
 		let box = new St.BoxLayout({ style_class: 'lunar-clock-details' });
